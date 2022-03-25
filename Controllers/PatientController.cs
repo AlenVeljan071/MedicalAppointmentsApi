@@ -1,168 +1,85 @@
-﻿namespace MedicalAppointmentsApi.Controllers
+﻿using MedicalAppointmentsApi.Extensions;
+
+namespace MedicalAppointmentsApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     public class PatientController : ControllerBase
     {
-        private readonly DbInteractor _context;
-        public PatientController(DbInteractor context)
+        private readonly IPatientRepository _repository;
+        public PatientController(IPatientRepository repository)
         {
-            _context = context;
+            _repository = repository;
         }
-
         // GET: api/Patients
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Patient>>> GetPatients()
         {
-            return await _context.Patients.ToListAsync();
+            var patients = await _repository.GetPatients();
+            return Ok(patients);
         }
-
         // GET: api/Patients/5
         [HttpGet("{id}")]
-        public ActionResult<Patient_Response_Model> GetPatient(string id)
+        public async Task<ActionResult<Patient_Response_Model>>GetPatient(string id)
         {
-            var patient = _context.Patients.Where(x => x.PatientId == id).FirstOrDefault();
-
-            if (patient == null)
-            {
-                return NotFound();
-            }
-            var patientRes = new Patient_Response_Model
-            {
-                PatientId = patient.PatientId,
-                FirstName = patient.FirstName,
-                LastName = patient.LastName,
-                Address = patient.Address,
-                Email = patient.Email,
-                DateOfBirth = patient.DateOfBirth,
-                Allergies = patient.Allergies,
-                Phone = patient.Phone,
-                Diagnosis = patient.Diagnosis,
-                CreatedBy = patient.CreatedBy,
-                CreatedDate = patient.CreatedDate,
-                UpdatedBy = patient.UpdatedBy,
-                UpdatedDate = patient.UpdatedDate,
-            };
-
-            return patientRes;
+           var patient = await _repository.GetPatient(id);
+           return Ok(patient.ResponsePatient());
         }
 
         // PUT: api/Patients/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut]
-        public async Task<IActionResult> PutPatient(Patient_Response_Model patient)
+        public ActionResult PutPatient(Patient_Response_Model patient)
         {
             if (patient.PatientId == null)
             {
                 return BadRequest();
             }
-            if (_context.Patients.Where(x => x.PatientId == patient.PatientId).Any())
-            {
-                var pat = _context.Patients.Where(x => x.PatientId == patient.PatientId).FirstOrDefault();
-                pat.PatientId = patient.PatientId;
-                pat.FirstName = patient.FirstName;
-                pat.LastName = patient.LastName;
-                pat.Address = patient.Address;
-                pat.Email = patient.Email;
-                pat.Diagnosis = patient.Diagnosis;
-                pat.UpdatedBy = patient.UpdatedBy;
-                pat.UpdatedDate = DateTime.UtcNow;
-                pat.Phone = patient.Phone;
-                pat.Allergies = patient.Allergies;
-            }
-
+             _repository.PutPatient(patient);
             try
             {
-                await _context.SaveChangesAsync();
+                _repository.SaveChanges();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception)
             {
-                if (!PatientExists(patient.PatientId))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return BadRequest();
             }
-
-            return NoContent();
+             return Ok();    
         }
 
-        // POST: api/Patients
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+       // POST: api/Patients
+       // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Patient_Response_Model>> PostDoctor(Patient_Request_Model patient)
+        public ActionResult<Patient_Response_Model> PostDoctor(Patient_Request_Model patient)
         {
-            var dbPatient = new Patient
-            {
-                PatientId = Guid.NewGuid().ToString(),
-                FirstName = patient.FirstName,
-                LastName = patient.LastName,
-                Phone = patient.Phone,
-                CreatedBy = patient.CreatedBy,
-                CreatedDate = DateTime.UtcNow,
-                Allergies = patient.Allergies,
-                Address = patient.Address,
-                DateOfBirth = patient.DateOfBirth,
-                Diagnosis = patient.Diagnosis,
-                Email = patient.Email,
-            };
-            _context.Patients.Add(dbPatient);
-
-            var patientRes = new Patient_Response_Model
-            {
-                PatientId = dbPatient.PatientId,
-                FirstName = dbPatient.FirstName,
-                LastName = dbPatient.LastName,
-                Phone = dbPatient.Phone,
-                CreatedBy = dbPatient.CreatedBy,
-                CreatedDate = dbPatient.CreatedDate,
-                Address = dbPatient.Address,
-                Allergies = dbPatient.Allergies,
-                Diagnosis = dbPatient.Diagnosis,
-                DateOfBirth = dbPatient.DateOfBirth,
-                Email = dbPatient.Email,
-            };
+            var patientRes = _repository.PostPatient(patient);
             try
             {
-                await _context.SaveChangesAsync();
+                _repository.SaveChanges();
             }
             catch (DbUpdateException)
             {
-                if (PatientExists(dbPatient.PatientId))
-                {
-                    return Conflict();
-                }
-                else
-                {
-                    throw;
-                }
+                return BadRequest();
             }
-
-            return CreatedAtAction("GetPatient", new { id = dbPatient.PatientId }, patientRes);
+            return  CreatedAtAction("GetPatient", new { id = patientRes.PatientId }, patientRes.ResponsePatient());
         }
 
         // DELETE: api/Patients/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeletePatient(string id)
+        public ActionResult DeletePatient(string id)
         {
-            var patient = await _context.Patients.FindAsync(id);
-            if (patient == null)
+           var response = _repository.DeletePatient(id);
+           if (response == false) return BadRequest();
+            try
             {
-                return NotFound();
+                _repository.SaveChanges();
             }
-
-            _context.Patients.Remove(patient);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            catch (Exception)
+            {
+               return BadRequest();
+            }
+            return Ok();
         }
-
-        private bool PatientExists(string id)
-        {
-            return _context.Patients.Any(e => e.PatientId == id);
-        }
+       
     }
 }

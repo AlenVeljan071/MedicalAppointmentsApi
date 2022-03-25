@@ -1,207 +1,103 @@
-﻿namespace MedicalAppointmentsApi.Controllers
+﻿using MedicalAppointmentsApi.Extensions;
+
+namespace MedicalAppointmentsApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     public class AppointmentController : ControllerBase
     {
-        private readonly DbInteractor _context;
-        public AppointmentController(DbInteractor context)
+        private readonly IAppointmentsRepository _repository;
+        public AppointmentController(IAppointmentsRepository repository)
         {
-            _context = context;
+          _repository = repository;
         }
 
         // GET: api/Appointments
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Appointment>>> GetAppointments()
         {
-            return await _context.Appointments.ToListAsync();
+            var appointments = await _repository.GetAppointments();
+            return Ok(appointments);
         }
 
 
         // GET: api/Appointments/5
         [HttpGet("{id}")]
-        public ActionResult<Appopintment_Response_Model> GetAppointment(string id)
+        public async Task<ActionResult<Appopintment_Response_Model>> GetAppointment(string id)
         {
-            var appointment = _context.Appointments.Where(x => x.AppointmentId == id).FirstOrDefault();
-
-            if (appointment == null)
-            {
-                return NotFound();
-            }
-            var appRes = new Appopintment_Response_Model
-            {
-                AppointmentId = appointment.AppointmentId,
-                Date_Time_App = appointment.Date_Time_App,
-                DoctorId = appointment.DoctorId,
-                PatientId = appointment.PatientId,
-                CreatedBy = appointment.CreatedBy,
-                CreatedDate = appointment.CreatedDate,
-                UpdatedBy = appointment.UpdatedBy,
-                UpdatedDate = appointment.UpdatedDate,
-            };
-
-            return appRes;
+            var appointment = await _repository.GetAppointment(id);
+            return Ok(appointment.ResponseAppointment());
         }
         // GET: api/Appointments/Patient
         [HttpGet("AppByPatient")]
-        public async Task<ActionResult<IEnumerable<Appopintment_Response_Model>>> GetAppointmentsByPatient([FromQuery] Patient_Response_Model patient)
+        public async Task<ActionResult<IEnumerable<Appopintment_Response_Model>>> GetAppointmentsByPatient(Patient_Response_Model patient)
         {
-            var appointment = await _context.Appointments.Where(x => x.PatientId == patient.PatientId).ToListAsync();
-
-            List<Appopintment_Response_Model> listApp = new List<Appopintment_Response_Model>();
-            foreach (var appointmentItem in appointment)
-            {
-                var x = new Appopintment_Response_Model
-                {
-                    AppointmentId = appointmentItem.AppointmentId,
-                    Date_Time_App = appointmentItem.Date_Time_App,
-                    DoctorId = appointmentItem.DoctorId,
-                    Note = appointmentItem.Note,
-                    CreatedBy = appointmentItem.CreatedBy,
-                    CreatedDate = appointmentItem.CreatedDate,
-                    PatientId = appointmentItem.PatientId,
-                    UpdatedBy = appointmentItem.UpdatedBy,
-                    UpdatedDate = appointmentItem.UpdatedDate,
-                };
-                listApp.Add(x);
-            }
-
-            return listApp;
+            var appointment = await _repository.GetAppointmentByPatient(patient.PatientId);
+            return Ok(appointment.ResponseAppointment());
         }
 
         // GET: api/Appointments/Doctor
         [HttpGet("AppByDoctor")]
-        public async Task<ActionResult<IEnumerable<Appopintment_Response_Model>>> GetAppointmentsByDoctor([FromQuery] Doctor_Response_Model doctor)
+        public async Task<ActionResult<IEnumerable<Appopintment_Response_Model>>> GetAppointmentsByDoctor(Doctor_Response_Model doctor)
         {
-            var appointment = await _context.Appointments.Where(x => x.DoctorId == doctor.DoctorId).ToListAsync();
-
-            List<Appopintment_Response_Model> listApp = new List<Appopintment_Response_Model>();
-            foreach (var appointmentItem in appointment)
-            {
-                var x = new Appopintment_Response_Model
-                {
-                    AppointmentId = appointmentItem.AppointmentId,
-                    Date_Time_App = appointmentItem.Date_Time_App,
-                    DoctorId = appointmentItem.DoctorId,
-                    Note = appointmentItem.Note,
-                    CreatedBy = appointmentItem.CreatedBy,
-                    CreatedDate = appointmentItem.CreatedDate,
-                    PatientId = appointmentItem.PatientId,
-                    UpdatedBy = appointmentItem.UpdatedBy,
-                    UpdatedDate = appointmentItem.UpdatedDate,
-                };
-                listApp.Add(x);
-            }
-
-            return listApp;
+            var appointment = await _repository.GetAppointmentByDoctor(doctor.DoctorId);
+            return Ok(appointment.ResponseAppointment());
         }
 
         // PUT: api/Appointments/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut]
-        public async Task<IActionResult> PutAppointment(Appopintment_Response_Model appointment)
+        public ActionResult PutAppointment(Appopintment_Response_Model appointment)
         {
             if (appointment.AppointmentId == null)
             {
                 return BadRequest();
             }
-            if (_context.Appointments.Where(x => x.AppointmentId == appointment.AppointmentId).Any())
-            {
-                var app = _context.Appointments.Where(x => x.AppointmentId == appointment.AppointmentId).FirstOrDefault();
-                app.UpdatedBy = appointment.UpdatedBy;
-                app.UpdatedDate = appointment.UpdatedDate;
-                app.Date_Time_App = app.Date_Time_App;
-                app.PatientId = appointment.PatientId;
-                app.DoctorId = appointment.DoctorId;
-                app.Note = appointment.Note;
-            }
-
+            _repository.PutAppointment(appointment);
             try
             {
-                await _context.SaveChangesAsync();
+                _repository.SaveChanges();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception)
             {
-                if (!AppointmentExists(appointment.AppointmentId))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return BadRequest();
             }
-
-            return NoContent();
+            return Ok();
         }
-
 
         // POST: api/Appointments
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Appopintment_Response_Model>> PostAppointment(Appointment_Request_Model appointment)
+        public ActionResult<Appopintment_Response_Model> PostAppointment(Appointment_Request_Model appointment)
         {
-            var dbAppointment = new Appointment
-            {
-                AppointmentId = Guid.NewGuid().ToString(),
-                Date_Time_App = appointment.Date_Time_App,
-                DoctorId = appointment.DoctorId,
-                PatientId = appointment.PatientId,
-                Note = appointment.Note,
-                CreatedBy = appointment.CreatedBy,
-                CreatedDate = DateTime.UtcNow,
-            };
-            _context.Appointments.Add(dbAppointment);
-
-            var appRes = new Appopintment_Response_Model
-            {
-                AppointmentId = dbAppointment.AppointmentId,
-                Date_Time_App = dbAppointment.Date_Time_App,
-                CreatedBy = dbAppointment.CreatedBy,
-                CreatedDate = dbAppointment.CreatedDate,
-                DoctorId = dbAppointment.DoctorId,
-                Note = dbAppointment.Note,
-                PatientId = dbAppointment.PatientId,
-            };
+            var appointmentRes = _repository.PostAppointment(appointment);
             try
             {
-                await _context.SaveChangesAsync();
+                _repository.SaveChanges();
             }
             catch (DbUpdateException)
             {
-                if (AppointmentExists(dbAppointment.AppointmentId))
-                {
-                    return Conflict();
-                }
-                else
-                {
-                    throw;
-                }
+                return BadRequest();
             }
-
-            return CreatedAtAction("GetAppointment", new { id = dbAppointment.AppointmentId }, appRes);
+            return CreatedAtAction("GetAppointment", new { id = appointmentRes.AppointmentId }, appointmentRes.ResponseAppointment());
         }
-
 
         // DELETE: api/Appointments/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteAppointment(string id)
+        public ActionResult DeleteAppointment(string id)
         {
-            var appointment = await _context.Appointments.FindAsync(id);
-            if (appointment == null)
+            var response = _repository.DeleteAppointment(id);
+            if (response == false) return BadRequest();
+            try
             {
-                return NotFound();
+                _repository.SaveChanges();
             }
-
-            _context.Appointments.Remove(appointment);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            catch (Exception)
+            {
+                return BadRequest();
+            }
+            return Ok();
         }
-
-        private bool AppointmentExists(string id)
-        {
-            return _context.Appointments.Any(e => e.AppointmentId == id);
-        }
+       
     }
 }
