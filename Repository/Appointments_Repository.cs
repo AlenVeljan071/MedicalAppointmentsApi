@@ -56,13 +56,13 @@
         {
             var dbAppointemnt = new Appointment
             {
-               AppointmentId = Guid.NewGuid().ToString(),
-               PatientId = appointment.PatientId,
-               DoctorId = appointment.DoctorId,
-               Note = appointment.Note,
-               CreatedBy = appointment.CreatedBy,
-               CreatedDate = DateTime.UtcNow,
-               Date_Time_App = appointment.Date_Time_App,
+                AppointmentId = Guid.NewGuid().ToString(),
+                PatientId = appointment.PatientId,
+                DoctorId = appointment.DoctorId,
+                Note = appointment.Note,
+                CreatedBy = appointment.CreatedBy,
+                CreatedDate = DateTime.UtcNow,
+                Date_Time_App = appointment.Date_Time_App,
             };
             _context.Appointments.Add(dbAppointemnt);
             return dbAppointemnt;

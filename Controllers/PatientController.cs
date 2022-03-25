@@ -1,6 +1,4 @@
-﻿using MedicalAppointmentsApi.Extensions;
-
-namespace MedicalAppointmentsApi.Controllers
+﻿namespace MedicalAppointmentsApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -20,12 +18,11 @@ namespace MedicalAppointmentsApi.Controllers
         }
         // GET: api/Patients/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Patient_Response_Model>>GetPatient(string id)
+        public async Task<ActionResult<Patient_Response_Model>> GetPatient(string id)
         {
-           var patient = await _repository.GetPatient(id);
-           return Ok(patient.ResponsePatient());
+            var patient = await _repository.GetPatient(id);
+            return Ok(patient.ResponsePatient());
         }
-
         // PUT: api/Patients/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut]
@@ -35,7 +32,7 @@ namespace MedicalAppointmentsApi.Controllers
             {
                 return BadRequest();
             }
-             _repository.PutPatient(patient);
+            _repository.PutPatient(patient);
             try
             {
                 _repository.SaveChanges();
@@ -44,11 +41,10 @@ namespace MedicalAppointmentsApi.Controllers
             {
                 return BadRequest();
             }
-             return Ok();    
+            return Ok();
         }
-
-       // POST: api/Patients
-       // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        // POST: api/Patients
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public ActionResult<Patient_Response_Model> PostDoctor(Patient_Request_Model patient)
         {
@@ -61,25 +57,23 @@ namespace MedicalAppointmentsApi.Controllers
             {
                 return BadRequest();
             }
-            return  CreatedAtAction("GetPatient", new { id = patientRes.PatientId }, patientRes.ResponsePatient());
+            return CreatedAtAction("GetPatient", new { id = patientRes.PatientId }, patientRes.ResponsePatient());
         }
-
         // DELETE: api/Patients/5
         [HttpDelete("{id}")]
         public ActionResult DeletePatient(string id)
         {
-           var response = _repository.DeletePatient(id);
-           if (response == false) return BadRequest();
+            var response = _repository.DeletePatient(id);
+            if (response == false) return BadRequest();
             try
             {
                 _repository.SaveChanges();
             }
             catch (Exception)
             {
-               return BadRequest();
+                return BadRequest();
             }
             return Ok();
         }
-       
     }
 }

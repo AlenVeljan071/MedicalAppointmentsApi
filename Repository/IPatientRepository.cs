@@ -2,7 +2,6 @@
 {
     public interface IPatientRepository
     {
-
         Task<IEnumerable<Patient>> GetPatients();
         Task<Patient> GetPatient(string id);
         void PutPatient(Patient_Response_Model patient);

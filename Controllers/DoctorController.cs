@@ -1,6 +1,4 @@
-﻿using MedicalAppointmentsApi.Extensions;
-
-namespace MedicalAppointmentsApi.Controllers
+﻿namespace MedicalAppointmentsApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -11,7 +9,6 @@ namespace MedicalAppointmentsApi.Controllers
         {
             _repository = doctorRepository;
         }
-
         // GET: api/Doctors
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Doctor>>> GetDoctors()
@@ -19,7 +16,6 @@ namespace MedicalAppointmentsApi.Controllers
             var doctors = await _repository.GetDoctors();
             return Ok(doctors);
         }
-
         // GET: api/Doctors/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Doctor_Response_Model>> GetDoctor(string id)
@@ -27,7 +23,6 @@ namespace MedicalAppointmentsApi.Controllers
             var patient = await _repository.GetDoctor(id);
             return Ok(patient.ResponseDoctor());
         }
-
         // PUT: api/Doctors/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut]
@@ -48,7 +43,6 @@ namespace MedicalAppointmentsApi.Controllers
             }
             return Ok();
         }
-
         // POST: api/Doctors
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
@@ -65,7 +59,6 @@ namespace MedicalAppointmentsApi.Controllers
             }
             return CreatedAtAction("GetDoctor", new { id = doctorRes.DoctorId }, doctorRes.ResponseDoctor());
         }
-
         // DELETE: api/Doctors/5
         [HttpDelete("{id}")]
         public ActionResult DeleteDoctor(string id)

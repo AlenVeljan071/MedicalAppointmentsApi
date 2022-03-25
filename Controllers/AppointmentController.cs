@@ -1,6 +1,4 @@
-﻿using MedicalAppointmentsApi.Extensions;
-
-namespace MedicalAppointmentsApi.Controllers
+﻿namespace MedicalAppointmentsApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -9,9 +7,8 @@ namespace MedicalAppointmentsApi.Controllers
         private readonly IAppointmentsRepository _repository;
         public AppointmentController(IAppointmentsRepository repository)
         {
-          _repository = repository;
+            _repository = repository;
         }
-
         // GET: api/Appointments
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Appointment>>> GetAppointments()
@@ -19,8 +16,6 @@ namespace MedicalAppointmentsApi.Controllers
             var appointments = await _repository.GetAppointments();
             return Ok(appointments);
         }
-
-
         // GET: api/Appointments/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Appopintment_Response_Model>> GetAppointment(string id)
@@ -43,7 +38,6 @@ namespace MedicalAppointmentsApi.Controllers
             var appointment = await _repository.GetAppointmentByDoctor(doctor.DoctorId);
             return Ok(appointment.ResponseAppointment());
         }
-
         // PUT: api/Appointments/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut]
@@ -64,7 +58,6 @@ namespace MedicalAppointmentsApi.Controllers
             }
             return Ok();
         }
-
         // POST: api/Appointments
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
@@ -81,7 +74,6 @@ namespace MedicalAppointmentsApi.Controllers
             }
             return CreatedAtAction("GetAppointment", new { id = appointmentRes.AppointmentId }, appointmentRes.ResponseAppointment());
         }
-
         // DELETE: api/Appointments/5
         [HttpDelete("{id}")]
         public ActionResult DeleteAppointment(string id)
@@ -98,6 +90,5 @@ namespace MedicalAppointmentsApi.Controllers
             }
             return Ok();
         }
-       
     }
 }
