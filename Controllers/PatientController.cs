@@ -13,8 +13,7 @@
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Patient>>> GetPatients()
         {
-            var patients = await _repository.GetPatients();
-            return Ok(patients);
+            return Ok(await _repository.GetPatients());
         }
         // GET: api/Patients/5
         [HttpGet("{id}")]

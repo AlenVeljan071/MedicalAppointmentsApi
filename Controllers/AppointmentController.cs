@@ -13,8 +13,7 @@
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Appointment>>> GetAppointments()
         {
-            var appointments = await _repository.GetAppointments();
-            return Ok(appointments);
+            return Ok(await _repository.GetAppointments());
         }
         // GET: api/Appointments/5
         [HttpGet("{id}")]
@@ -22,6 +21,7 @@
         {
             var appointment = await _repository.GetAppointment(id);
             return Ok(appointment.ResponseAppointment());
+
         }
         // GET: api/Appointments/Patient
         [HttpGet("AppByPatient")]
