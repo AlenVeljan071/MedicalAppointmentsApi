@@ -7,12 +7,20 @@
         {
             _context = context;
         }
-        public bool DeletePatient(string id)
+        public async Task<bool> DeletePatient(string id)
         {
-            var patient = _context.Patients.Find(id);
+            var patient = await _context.Patients.FindAsync(id);
             if (patient == null) return false;
             _context.Patients.Remove(patient);
-            return true;
+            try
+            { 
+               await _context.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+            return true; 
         }
         public async Task<Patient> GetPatient(string id)
         {
@@ -29,7 +37,7 @@
             var patients = await _context.Patients.ToListAsync();
             return patients;
         }
-        public Patient PostPatient(Patient_Request_Model patient)
+        public async Task<Patient> PostPatient(Patient_Request_Model patient)
         {
             var dbPatient = new Patient
             {
@@ -45,34 +53,45 @@
                 Diagnosis = patient.Diagnosis,
                 Email = patient.Email,
             };
-            _context.Patients.Add(dbPatient);
-            return dbPatient;
-        }
-        public void PutPatient(Patient_Response_Model patient)
-        {
-            if (patient.PatientId != null)
+            await _context.Patients.AddAsync(dbPatient);
+            try
             {
-                if (_context.Patients.Where(x => x.PatientId == patient.PatientId).Any())
-                {
-                    var pat = _context.Patients.Where(x => x.PatientId == patient.PatientId).FirstOrDefault();
-                    pat.PatientId = patient.PatientId;
-                    pat.FirstName = patient.FirstName;
-                    pat.LastName = patient.LastName;
-                    pat.Address = patient.Address;
-                    pat.Email = patient.Email;
-                    pat.Diagnosis = patient.Diagnosis;
-                    pat.UpdatedBy = patient.UpdatedBy;
-                    pat.UpdatedDate = DateTime.UtcNow;
-                    pat.Phone = patient.Phone;
-                    pat.Allergies = patient.Allergies;
-                    _context.Patients.Update(pat);
-                }
+                await _context.SaveChangesAsync();
             }
+            catch (Exception)
+            {
+
+                return null;
+            }
+            
+             return dbPatient;
         }
-        public void SaveChanges()
+        public async Task<Patient> PutPatient(Patient_Response_Model patient)
         {
-            _context.SaveChanges();
+            var pat = await _context.Patients.Where(x => x.PatientId == patient.PatientId).FirstOrDefaultAsync();
+            if(pat == null) return null;
+            pat.PatientId = patient.PatientId;
+            pat.FirstName = patient.FirstName;
+            pat.LastName = patient.LastName;
+            pat.Address = patient.Address;
+            pat.Email = patient.Email;
+            pat.Diagnosis = patient.Diagnosis;
+            pat.UpdatedBy = patient.UpdatedBy;
+            pat.UpdatedDate = DateTime.UtcNow;
+            pat.Phone = patient.Phone;
+            pat.Allergies = patient.Allergies;
+          
+            try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch (Exception)
+                {
+                    return null;
+                }
+                return pat;
         }
+       
     }
 }
 

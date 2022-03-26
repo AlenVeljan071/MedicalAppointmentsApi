@@ -7,16 +7,24 @@
         {
             _context = context;
         }
-        public bool DeleteDoctor(string id)
+        public async Task<bool> DeleteDoctor(string id)
         {
-            var doctor = _context.Doctors.Find(id);
+            var doctor = await _context.Doctors.FindAsync(id);
             if (doctor == null) return false;
             _context.Doctors.Remove(doctor);
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                return false;
+            }
             return true;
         }
         public async Task<Doctor> GetDoctor(string id)
         {
-            var doctor = await _context.Doctors.Where(x => x.DoctorId == id).FirstOrDefaultAsync();
+            var doctor = await _context.Doctors.Where(x => x.DoctorId == id).Include(x=>x.Appointments).FirstOrDefaultAsync();
 
             if (doctor == null)
             {
@@ -29,7 +37,7 @@
             var doctors = await _context.Doctors.ToListAsync();
             return doctors;
         }
-        public Doctor PostDoctor(Doctor_Request_Model doctor)
+        public async Task <Doctor> PostDoctor(Doctor_Request_Model doctor)
         {
             var dbDoctor = new Doctor
             {
@@ -42,31 +50,38 @@
                 Specialist = doctor.Specialist,
             };
             _context.Doctors.Add(dbDoctor);
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                return null;
+            }
             return dbDoctor;
         }
-        public void PutDoctor(Doctor_Response_Model doctor)
+        public async Task<Doctor> PutDoctor(Doctor_Response_Model doctor)
         {
-            if (doctor.DoctorId != null)
+            var doc = await _context.Doctors.Where(x => x.DoctorId == doctor.DoctorId).FirstOrDefaultAsync();
+            if (doc == null) return null;
+            doc.DoctorId = doctor.DoctorId;
+            doc.FirstName = doctor.FirstName;
+            doc.LastName = doctor.LastName;
+            doc.UpdatedBy = doctor.UpdatedBy;
+            doc.UpdatedDate = DateTime.UtcNow;
+            doc.Phone = doctor.Phone;
+            doc.CreatedDate = doctor.CreatedDate;
+            doc.Specialist = doctor.Specialist;
+            doc.CreatedBy = doctor.CreatedBy;
+            try
             {
-                if (_context.Doctors.Where(x => x.DoctorId == doctor.DoctorId).Any())
-                {
-                    var doc = _context.Doctors.Where(x => x.DoctorId == doctor.DoctorId).FirstOrDefault();
-                    doc.DoctorId = doctor.DoctorId;
-                    doc.FirstName = doctor.FirstName;
-                    doc.LastName = doctor.LastName;
-                    doc.UpdatedBy = doctor.UpdatedBy;
-                    doc.UpdatedDate = DateTime.UtcNow;
-                    doc.Phone = doctor.Phone;
-                    doc.CreatedDate = doctor.CreatedDate;
-                    doc.Specialist = doctor.Specialist;
-                    doc.CreatedBy = doctor.CreatedBy;
-                    _context.Doctors.Update(doc);
-                }
+                await _context.SaveChangesAsync();
             }
-        }
-        public void SaveChanges()
-        {
-            _context.SaveChanges();
+            catch (Exception)
+            {
+                return null;
+            }
+            return doc;
         }
     }
 }

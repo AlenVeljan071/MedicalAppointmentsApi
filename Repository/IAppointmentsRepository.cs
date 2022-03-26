@@ -6,9 +6,8 @@
         Task<Appointment> GetAppointment(string id);
         Task<Appointment> GetAppointmentByDoctor(string id);
         Task<Appointment> GetAppointmentByPatient(string id);
-        void PutAppointment(Appopintment_Response_Model patient);
-        void SaveChanges();
-        Appointment PostAppointment(Appointment_Request_Model patient);
-        bool DeleteAppointment(string id);
+        Task<Appointment> PutAppointment(Appopintment_Response_Model patient);
+        Task<Appointment> PostAppointment(Appointment_Request_Model patient);
+        Task<bool> DeleteAppointment(string id);
     }
 }

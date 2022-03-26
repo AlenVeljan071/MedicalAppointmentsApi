@@ -43,51 +43,26 @@
         [HttpPut]
         public ActionResult PutAppointment(Appopintment_Response_Model appointment)
         {
-            if (appointment.AppointmentId == null)
-            {
-                return BadRequest();
-            }
-            _repository.PutAppointment(appointment);
-            try
-            {
-                _repository.SaveChanges();
-            }
-            catch (Exception)
-            {
-                return BadRequest();
-            }
+            if (appointment.AppointmentId == null) return BadRequest();
+            var response =_repository.PutAppointment(appointment);
+            if(response == null)return BadRequest();
             return Ok();
         }
         // POST: api/Appointments
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public ActionResult<Appopintment_Response_Model> PostAppointment(Appointment_Request_Model appointment)
+        public async Task<ActionResult<Appopintment_Response_Model>> PostAppointment(Appointment_Request_Model appointment)
         {
-            var appointmentRes = _repository.PostAppointment(appointment);
-            try
-            {
-                _repository.SaveChanges();
-            }
-            catch (DbUpdateException)
-            {
-                return BadRequest();
-            }
+            var appointmentRes = await _repository.PostAppointment(appointment);
+            if (appointmentRes == null) return BadRequest();
             return CreatedAtAction("GetAppointment", new { id = appointmentRes.AppointmentId }, appointmentRes.ResponseAppointment());
         }
         // DELETE: api/Appointments/5
         [HttpDelete("{id}")]
-        public ActionResult DeleteAppointment(string id)
+        public async Task<ActionResult<bool>> DeleteAppointment(string id)
         {
-            var response = _repository.DeleteAppointment(id);
+            var response = await _repository.DeleteAppointment(id);
             if (response == false) return BadRequest();
-            try
-            {
-                _repository.SaveChanges();
-            }
-            catch (Exception)
-            {
-                return BadRequest();
-            }
             return Ok();
         }
     }

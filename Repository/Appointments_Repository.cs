@@ -7,11 +7,19 @@
         {
             _context = context;
         }
-        public bool DeleteAppointment(string id)
+        public async Task<bool> DeleteAppointment(string id)
         {
-            var appointment = _context.Appointments.Find(id);
+            var appointment = await _context.Appointments.FindAsync(id);
             if (appointment == null) return false;
             _context.Appointments.Remove(appointment);
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                return false;
+            }
             return true;
         }
         public async Task<Appointment> GetAppointment(string id)
@@ -52,7 +60,7 @@
             var appointments = await _context.Appointments.ToListAsync();
             return appointments;
         }
-        public Appointment PostAppointment(Appointment_Request_Model appointment)
+        public async Task<Appointment> PostAppointment(Appointment_Request_Model appointment)
         {
             var dbAppointemnt = new Appointment
             {
@@ -64,27 +72,38 @@
                 CreatedDate = DateTime.UtcNow,
                 Date_Time_App = appointment.Date_Time_App,
             };
-            _context.Appointments.Add(dbAppointemnt);
+             _context.Appointments.Add(dbAppointemnt);
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                return null;
+            }
             return dbAppointemnt;
         }
-        public void PutAppointment(Appopintment_Response_Model appointment)
+        public async Task<Appointment> PutAppointment(Appopintment_Response_Model appointment)
         {
-            if (appointment.AppointmentId != null)
+            var app = _context.Appointments.Where(x => x.AppointmentId == appointment.AppointmentId).FirstOrDefault();
+            if (app == null) return null;
+            app.DoctorId = appointment.DoctorId;
+            app.Note = appointment.Note;
+            app.CreatedBy = appointment.CreatedBy;
+            app.CreatedDate = appointment.CreatedDate;
+            app.Date_Time_App = appointment.Date_Time_App;
+            app.PatientId = appointment.PatientId;
+            app.UpdatedDate = DateTime.UtcNow;
+            app.UpdatedBy = appointment.UpdatedBy;
+            try
             {
-                if (_context.Appointments.Where(x => x.AppointmentId == appointment.AppointmentId).Any())
-                {
-                    var app = _context.Appointments.Where(x => x.AppointmentId == appointment.AppointmentId).FirstOrDefault();
-                    app.DoctorId = appointment.DoctorId;
-                    app.Note = appointment.Note;
-                    app.CreatedBy = appointment.CreatedBy;
-                    app.CreatedDate = appointment.CreatedDate;
-                    app.Date_Time_App = appointment.Date_Time_App;
-                    app.PatientId = appointment.PatientId;
-                    app.UpdatedDate = DateTime.UtcNow;
-                    app.UpdatedBy = appointment.UpdatedBy;
-                    _context.Appointments.Update(app);
-                }
+                await _context.SaveChangesAsync();
             }
+            catch (Exception)
+            {
+                return null;
+            }
+            return app;
         }
         public void SaveChanges()
         {
