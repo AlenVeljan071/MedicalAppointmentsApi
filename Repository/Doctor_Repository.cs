@@ -25,11 +25,6 @@
         public async Task<Doctor> GetDoctor(string id)
         {
             var doctor = await _context.Doctors.Where(x => x.DoctorId == id).Include(x=>x.Appointments).FirstOrDefaultAsync();
-
-            if (doctor == null)
-            {
-                return null;
-            }
             return doctor;
         }
         public async Task<IEnumerable<Doctor>> GetDoctors()

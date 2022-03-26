@@ -20,7 +20,6 @@
         public async Task<ActionResult<Patient_Response_Model>> GetPatient(string id)
         {
             var patient = await _repository.GetPatient(id);
-            if (patient == null) return BadRequest();
             return Ok(patient.ResponsePatient());
         }
         // PUT: api/Patients/5

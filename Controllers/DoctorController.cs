@@ -19,8 +19,8 @@
         [HttpGet("{id}")]
         public async Task<ActionResult<Doctor_Response_Model>> GetDoctor(string id)
         {
-            var patient = await _repository.GetDoctor(id);
-            return Ok(patient.ResponseDoctor());
+            var doctor = await _repository.GetDoctor(id);
+            return Ok(doctor.ResponseDoctor());
         }
         // PUT: api/Doctors/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754

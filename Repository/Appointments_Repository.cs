@@ -25,33 +25,18 @@
         public async Task<Appointment> GetAppointment(string id)
         {
             var appointment = await _context.Appointments.Where(x => x.AppointmentId == id).FirstOrDefaultAsync();
-
-            if (appointment == null)
-            {
-                return null;
-            }
             return appointment;
         }
 
         public async Task<Appointment> GetAppointmentByDoctor(string id)
         {
             var appointment = await _context.Appointments.Where(x => x.DoctorId == id).FirstOrDefaultAsync();
-
-            if (appointment == null)
-            {
-                return null;
-            }
             return appointment;
         }
 
         public async Task<Appointment> GetAppointmentByPatient(string id)
         {
             var appointment = await _context.Appointments.Where(x => x.PatientId == id).FirstOrDefaultAsync();
-
-            if (appointment == null)
-            {
-                return null;
-            }
             return appointment;
         }
 

@@ -25,11 +25,6 @@
         public async Task<Patient> GetPatient(string id)
         {
             var patient = await _context.Patients.Where(x => x.PatientId == id).FirstOrDefaultAsync();
-
-            if (patient == null)
-            {
-                return null;
-            }
             return patient;
         }
         public async Task<IEnumerable<Patient>> GetPatients()
